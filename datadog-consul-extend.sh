@@ -2,12 +2,24 @@
 
 main() {
 	check_env
+	while true; do
+		post_metric_all_services post_service_hosts_number
+		sleep 5
+	done
 }
 
 check_env() {
 	test -z "$API_KEY" && exit 1
 	test -z "$API_ENDPOINT" && export API_ENDPOINT='https://app.datadoghq.com/api/'
 	test -z "$CONSUL_API" && export CONSUL_API='http://localhost:8500/v1/'
+}
+
+post_metric_all_services() {
+	local func=${1}
+	for service in $(get_services_list); do
+		${func} ${service} &
+	done
+
 }
 
 get_services_list() {
