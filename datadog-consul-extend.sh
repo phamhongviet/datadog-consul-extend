@@ -16,10 +16,7 @@ check_env() {
 
 post_metric_all_services() {
 	local func=${1}
-	for service in $(get_services_list); do
-		${func} ${service} &
-	done
-
+	${func} $(get_services_list)
 }
 
 get_services_list() {
@@ -32,21 +29,32 @@ get_service_hosts_number() {
 }
 
 post_service_hosts_number() {
-	local service_name=${1}
+	local services=${@}
 	local current_time=$(date +%s)
-	local metric_name="consul.extend.${service_name}.n_hosts"
+	local metric_name=
 	local point=$(get_service_hosts_number ${service_name})
 	local host=$(hostname)
+	local payload="{}"
 	curl  -X POST -H "Content-type: application/json" \
-	-d "{ \"series\" :
-			 [{\"metric\":\"${metric_name}\",
-			  \"points\":[[$current_time, ${point}]],
-			  \"type\":\"gauge\",
-			  \"host\":\"${host}\",
-			  \"tags\":[]}
-			]
-		}" \
+	-d "{ \"series\" :[
+	$(for srv in ${services}; do
+		metric_name="consul.extend.${srv}.n_hosts"
+		construct_metric $metric_name $current_time $point $host
+	done | paste -s -d,)
+		]}" \
 	"${API_ENDPOINT}v1/series?api_key=${API_KEY}"
+}
+
+construct_metric() {
+	local metric_name=$1
+	local current_time=$2
+	local point=$3
+	local host=$4
+	echo "{\"metric\":\"${metric_name}\",
+	\"points\":[[${current_time},${point}]],
+	\"type\":\"gauge\",
+	\"host\":\"${host}\",
+	\"tags\":[]}"
 }
 
 main $@
