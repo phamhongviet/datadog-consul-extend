@@ -15,7 +15,26 @@ get_services_list() {
 }
 
 get_service_hosts_number() {
-	curl -s "${CONSUL_API}health/service/${1}?passing" | jq length
+	local service_name=${1}
+	curl -s "${CONSUL_API}health/service/${service_name}?passing" | jq length
+}
+
+post_service_hosts_number() {
+	local service_name=${1}
+	local current_time=$(date +%s)
+	local metric_name="consul.extend.${service_name}.n_hosts"
+	local point=$(get_service_hosts_number ${service_name})
+	local host=$(hostname)
+	curl  -X POST -H "Content-type: application/json" \
+	-d "{ \"series\" :
+			 [{\"metric\":\"${metric_name}\",
+			  \"points\":[[$current_time, ${point}]],
+			  \"type\":\"gauge\",
+			  \"host\":\"${host}\",
+			  \"tags\":[]}
+			]
+		}" \
+	"${API_ENDPOINT}v1/series?api_key=${API_KEY}"
 }
 
 main $@
