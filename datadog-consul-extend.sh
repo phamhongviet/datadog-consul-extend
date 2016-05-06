@@ -34,7 +34,6 @@ post_service_hosts_number() {
 	local metric_name=
 	local point=
 	local host=$(hostname)
-	local payload="{}"
 	curl  -X POST -H "Content-type: application/json" \
 	-d "{ \"series\" :[
 	$(for srv in ${services}; do
