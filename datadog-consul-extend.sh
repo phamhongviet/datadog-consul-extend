@@ -50,11 +50,7 @@ construct_metric() {
 	local current_time=$2
 	local point=$3
 	local host=$4
-	echo "{\"metric\":\"${metric_name}\",
-	\"points\":[[${current_time},${point}]],
-	\"type\":\"gauge\",
-	\"host\":\"${host}\",
-	\"tags\":[]}"
+	echo "{\"metric\":\"${metric_name}\",\"points\":[[${current_time},${point}]],\"type\":\"gauge\",\"host\":\"${host}\",\"tags\":[]}"
 }
 
 main $@
