@@ -12,7 +12,7 @@ check_env() {
 	test -z "$API_KEY" && exit 1
 	test -z "$API_ENDPOINT" && export API_ENDPOINT='https://app.datadoghq.com/api/'
 	test -z "$CONSUL_API" && export CONSUL_API='http://localhost:8500/v1/'
-	test -z "$HOSTNAME" && export HOSTNAME=$(hostname)
+	test -z "$DD_HOSTNAME" && export DD_HOSTNAME=$(hostname)
 }
 
 post_metric_all_services() {
@@ -39,7 +39,7 @@ post_service_hosts_number() {
 	$(for srv in ${services}; do
 		metric_name="consul.extend.${srv}.n_hosts"
 		point=$(get_service_hosts_number ${srv})
-		construct_metric "$metric_name" "$current_time" "$point" "$HOSTNAME"
+		construct_metric "$metric_name" "$current_time" "$point" "$DD_HOSTNAME"
 	done | paste -s -d,)
 		]}" \
 	"${API_ENDPOINT}v1/series?api_key=${API_KEY}"
