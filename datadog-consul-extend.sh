@@ -32,14 +32,15 @@ post_service_hosts_number() {
 	local services=${@}
 	local current_time=$(date +%s)
 	local metric_name=
-	local point=$(get_service_hosts_number ${service_name})
+	local point=
 	local host=$(hostname)
 	local payload="{}"
 	curl  -X POST -H "Content-type: application/json" \
 	-d "{ \"series\" :[
 	$(for srv in ${services}; do
 		metric_name="consul.extend.${srv}.n_hosts"
-		construct_metric $metric_name $current_time $point $host
+		point=$(get_service_hosts_number ${srv})
+		construct_metric "$metric_name" "$current_time" "$point" "$host"
 	done | paste -s -d,)
 		]}" \
 	"${API_ENDPOINT}v1/series?api_key=${API_KEY}"
